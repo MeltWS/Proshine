@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using PROBot;
 using PROProtocol;
+using PROShine.Views;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 
 namespace PROShine
@@ -23,6 +25,18 @@ namespace PROShine
         public InventoryView Inventory { get; private set; }
         public ChatView Chat { get; private set; }
         public PlayersView Players { get; private set; }
+        public MapView Map { get; private set; }
+
+        private struct TabView
+        {
+            public UserControl View;
+            public ContentControl Content;
+            public ToggleButton Button;
+        }
+        private List<TabView> _views = new List<TabView>();
+
+        public FileLogger FileLog { get; private set; }
+
         DateTime _refreshPlayers;
         int _refreshPlayersDelay;
         DateTime _lastQueueBreakPointTime;
@@ -59,26 +73,63 @@ namespace PROShine
             Inventory = new InventoryView();
             Chat = new ChatView(Bot);
             Players = new PlayersView(Bot);
+            Map = new MapView(Bot);
+
+            FileLog = new FileLogger();
 
             _refreshPlayers = DateTime.UtcNow;
             _refreshPlayersDelay = 5000;
 
-            TeamContent.Content = Team;
-            InventoryContent.Content = Inventory;
-            ChatContent.Content = Chat;
-            PlayersContent.Content = Players;
-
-            TeamContent.Visibility = Visibility.Visible;
-            InventoryContent.Visibility = Visibility.Collapsed;
-            ChatContent.Visibility = Visibility.Collapsed;
-            PlayersContent.Visibility = Visibility.Collapsed;
-            TeamButton.IsChecked = true;
+            AddView(Team, TeamContent, TeamButton, true);
+            AddView(Inventory, InventoryContent, InventoryButton);
+            AddView(Chat, ChatContent, ChatButton);
+            AddView(Players, PlayersContent, PlayersButton);
+            AddView(Map, MapContent, MapButton);
 
             SetTitle(null);
 
             LogMessage("Running " + App.Name + " by " + App.Author + ", version " + App.Version);
 
             Task.Run(() => UpdateClients());
+        }
+
+        private void AddView(UserControl view, ContentControl content, ToggleButton button, bool visible = false)
+        {
+            _views.Add(new TabView
+            {
+                View = view,
+                Content = content,
+                Button = button
+            });
+            content.Content = view;
+            if (visible)
+            {
+                content.Visibility = Visibility.Visible;
+                button.IsChecked = true;
+            }
+            else
+            {
+                content.Visibility = Visibility.Collapsed;
+            }
+            button.Click += ViewButton_Click;
+        }
+
+        private void ViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (TabView view in _views)
+            {
+                if (view.Button == sender)
+                {
+                    view.Content.Visibility = Visibility.Visible;
+                    view.Button.IsChecked = true;
+                    _refreshPlayersDelay = view.View == Players ? 200 : 5000;
+                }
+                else
+                {
+                    view.Content.Visibility = Visibility.Collapsed;
+                    view.Button.IsChecked = false;
+                }
+            }
         }
 
         private void SetTitle(string username)
@@ -281,7 +332,7 @@ namespace PROShine
                 {
                     if (Bot.Game != null)
                     {
-                        SetTitle(Bot.Account.Name);
+                        SetTitle(Bot.Account.Name + " - " + Bot.Game.Server);
                         UpdateBotMenu();
                         LogoutMenuItem.IsEnabled = true;
                         LoginButton.IsEnabled = true;
@@ -447,8 +498,21 @@ namespace PROShine
                     Bot.Game.InvalidPacket += Client_InvalidPacket;
                     Bot.Game.PokeTimeUpdated += Client_PokeTimeUpdated;
                     Bot.Game.ShopOpened += Client_ShopOpened;
+                    Bot.Game.MapLoaded += Map.Client_MapLoaded;
+                    Bot.Game.PositionUpdated += Map.Client_PositionUpdated;
                 }
             }
+            Dispatcher.InvokeAsync(delegate
+            {
+                if (Bot.Game != null)
+                {
+                    FileLog.OpenFile(Bot.Account.Name, Bot.Game.Server.ToString());
+                }
+                else
+                {
+                    FileLog.CloseFile();
+                }
+            });
         }
 
         private void Client_QueueUpdated(int position)
@@ -614,7 +678,9 @@ namespace PROShine
         
         private void LogMessage(string message)
         {
-            AppendLineToTextBox(MessageTextBox, "[" + DateTime.Now.ToLongTimeString() + "] " + message);
+            message = "[" + DateTime.Now.ToLongTimeString() + "] " + message;
+            AppendLineToTextBox(MessageTextBox, message);
+            FileLog.Append(message);
         }
 
         private void LogMessage(string format, params object[] args)
@@ -645,58 +711,6 @@ namespace PROShine
             textBox.ScrollToEnd();
         }
 
-        private void TeamButton_Click(object sender, RoutedEventArgs e)
-        {
-            TeamContent.Visibility = Visibility.Visible;
-            InventoryContent.Visibility = Visibility.Collapsed;
-            ChatContent.Visibility = Visibility.Collapsed;
-            PlayersContent.Visibility = Visibility.Collapsed;
-            TeamButton.IsChecked = true;
-            InventoryButton.IsChecked = false;
-            ChatButton.IsChecked = false;
-            PlayersButton.IsChecked = false;
-            _refreshPlayersDelay = 5000;
-        }
-
-        private void InventoryButton_Click(object sender, RoutedEventArgs e)
-        {
-            TeamContent.Visibility = Visibility.Collapsed;
-            InventoryContent.Visibility = Visibility.Visible;
-            ChatContent.Visibility = Visibility.Collapsed;
-            PlayersContent.Visibility = Visibility.Collapsed;
-            TeamButton.IsChecked = false;
-            InventoryButton.IsChecked = true;
-            ChatButton.IsChecked = false;
-            PlayersButton.IsChecked = false;
-            _refreshPlayersDelay = 5000;
-        }
-
-        private void ChatButton_Click(object sender, RoutedEventArgs e)
-        {
-            TeamContent.Visibility = Visibility.Collapsed;
-            InventoryContent.Visibility = Visibility.Collapsed;
-            ChatContent.Visibility = Visibility.Visible;
-            PlayersContent.Visibility = Visibility.Collapsed;
-            TeamButton.IsChecked = false;
-            InventoryButton.IsChecked = false;
-            ChatButton.IsChecked = true;
-            PlayersButton.IsChecked = false;
-            _refreshPlayersDelay = 5000;
-        }
-
-        private void PlayersButton_Click(object sender, RoutedEventArgs e)
-        {
-            TeamContent.Visibility = Visibility.Collapsed;
-            InventoryContent.Visibility = Visibility.Collapsed;
-            ChatContent.Visibility = Visibility.Collapsed;
-            PlayersContent.Visibility = Visibility.Visible;
-            TeamButton.IsChecked = false;
-            InventoryButton.IsChecked = false;
-            ChatButton.IsChecked = false;
-            PlayersButton.IsChecked = true;
-            _refreshPlayersDelay = 200;
-        }
-
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(App.Name + " version " + App.Version + ", by " + App.Author + "." + Environment.NewLine + App.Description, App.Name + " - About");
@@ -710,6 +724,11 @@ namespace PROShine
         private void MenuGitHub_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("https://github.com/Silv3rPRO/proshine");
+        }
+
+        private void MenuDonate_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://www.patreon.com/proshine");
         }
 
         private void StartScriptButton_Click(object sender, RoutedEventArgs e)

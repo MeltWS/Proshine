@@ -106,8 +106,10 @@
                     <MenuItem Name="MenuPathScript" Header="Script: None" Click="MenuPathScript_Click" />
                 </MenuItem>
                 <MenuItem Header="Help">
-                    <MenuItem Header="Forum" Click="MenuForum_Click" />
-                    <MenuItem Header="GitHub" Click="MenuGitHub_Click" />
+                    <MenuItem Header="Community (Forum)" Click="MenuForum_Click" />
+                    <MenuItem Header="Source code (GitHub)" Click="MenuGitHub_Click" />
+                    <MenuItem Header="Donate (Patreon)" Click="MenuDonate_Click" />
+                    <Separator />
                     <MenuItem Header="About" Click="MenuAbout_Click" />
                 </MenuItem>
             </Menu>
@@ -183,8 +185,9 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <ToggleButton Name="TeamButton" Grid.Row="0" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020" Click="TeamButton_Click">
+                    <ToggleButton Name="TeamButton" Grid.Row="0" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020">
                         <ToggleButton.Content>
                             <StackPanel>
                                 <fa:FontAwesome Icon="Paw" Foreground="#FF101020" FontSize="15" Margin="4,1,4,1" />
@@ -192,7 +195,7 @@
                             </StackPanel>
                         </ToggleButton.Content>
                     </ToggleButton>
-                    <ToggleButton Name="InventoryButton" Grid.Row="1" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020" Click="InventoryButton_Click">
+                    <ToggleButton Name="InventoryButton" Grid.Row="1" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020">
                         <ToggleButton.Content>
                             <StackPanel>
                                 <fa:FontAwesome Icon="Suitcase" Foreground="#FF101020" FontSize="15" Margin="4,1,4,1" />
@@ -200,7 +203,7 @@
                             </StackPanel>
                         </ToggleButton.Content>
                     </ToggleButton>
-                    <ToggleButton Name="ChatButton" Grid.Row="2" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020" Click="ChatButton_Click">
+                    <ToggleButton Name="ChatButton" Grid.Row="2" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020">
                         <ToggleButton.Content>
                             <StackPanel>
                                 <fa:FontAwesome Icon="Comment" Foreground="#FF101020" FontSize="15" Margin="4,1,4,1" />
@@ -208,11 +211,19 @@
                             </StackPanel>
                         </ToggleButton.Content>
                     </ToggleButton>
-                    <ToggleButton Name="PlayersButton" Grid.Row="3" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020" Click="PlayersButton_Click">
+                    <ToggleButton Name="PlayersButton" Grid.Row="3" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020">
                         <ToggleButton.Content>
                             <StackPanel>
                                 <fa:FontAwesome Icon="Users" Foreground="#FF101020" FontSize="15" Margin="4,1,4,1" />
                                 <TextBlock Text="Players" Margin="4,1,4,1" />
+                            </StackPanel>
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    <ToggleButton Name="MapButton" Grid.Row="4" Margin="1" Background="#FFCDD5E2" Foreground="#FF101020">
+                        <ToggleButton.Content>
+                            <StackPanel>
+                                <fa:FontAwesome Icon="Cube"  Foreground="#FF101020" FontSize="15" Margin="4,1,4,1" />
+                                <TextBlock Text="Map" Margin="4,1,4,1" />
                             </StackPanel>
                         </ToggleButton.Content>
                     </ToggleButton>
@@ -223,6 +234,7 @@
                 <ContentControl Name="InventoryContent" />
                 <ContentControl Name="ChatContent" />
                 <ContentControl Name="PlayersContent" />
+                <ContentControl Name="MapContent" />
             </Grid>
         </Grid>
         <GridSplitter ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="4" Grid.Row="3" Background="Transparent"/>

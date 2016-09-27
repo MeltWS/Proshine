@@ -64,6 +64,8 @@ namespace PROProtocol
         public event Action<int> QueueUpdated;
 
         public event Action<string, int, int> PositionUpdated;
+        public event Action<string, int, int> TeleportationOccuring;
+        public event Action<string> MapLoaded;
         public event Action PokemonsUpdated;
         public event Action InventoryUpdated;
         public event Action BattleStarted;
@@ -126,6 +128,22 @@ namespace PROProtocol
                     && !_itemUseTimeout.IsActive
                     && !_fishingTimeout.IsActive
                     && !_refreshingPCBox.IsActive;
+            }
+        }
+
+        public bool IsTeleporting
+        {
+            get
+            {
+                return _teleportationTimeout.IsActive;
+            }
+        }
+
+        public GameServer Server
+        {
+            get
+            {
+                return _connection.Server;
             }
         }
 
@@ -888,6 +906,8 @@ namespace PROProtocol
 
                 CanUseCut = HasCutAbility();
                 CanUseSmashRock = HasRockSmashAbility();
+
+                MapLoaded?.Invoke(MapName);
             }
             else
             {
@@ -1136,6 +1156,8 @@ namespace PROProtocol
             int playerY = Convert.ToInt32(mapData[2]);
             if (playerX != PlayerX || playerY != PlayerY || map != MapName)
             {
+                TeleportationOccuring?.Invoke(map, playerX, playerY);
+
                 PlayerX = playerX;
                 PlayerY = playerY;
                 LoadMap(map);
@@ -1345,7 +1367,7 @@ namespace PROProtocol
 
             if (ActiveBattle.IsFinished)
             {
-                _battleTimeout.Set(Rand.Next(1000, 3000));
+                _battleTimeout.Set(Rand.Next(1500, 5000));
             }
             else
             {

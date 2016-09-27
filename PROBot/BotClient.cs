@@ -73,6 +73,7 @@ namespace PROBot
                 client.BattleMessage += Client_BattleMessage;
                 client.SystemMessage += Client_SystemMessage;
                 client.DialogOpened += Client_DialogOpened;
+                client.TeleportationOccuring += Client_TeleportationOccuring;
             }
             ClientChanged?.Invoke();
         }
@@ -384,6 +385,32 @@ namespace PROBot
             {
                 Script.OnBattleMessage(message);
             }
+        }
+
+        private void Client_TeleportationOccuring(string map, int x, int y)
+        {
+            string message = "Position updated: " + map + " (" + x + ", " + y + ")";
+            if (Game.Map == null || Game.IsTeleporting)
+            {
+                message += " [OK]";
+            }
+            else if (Game.MapName != map)
+            {
+                message += " [WARNING, different map] /!\\";
+            }
+            else
+            {
+                int distance = GameClient.DistanceBetween(x, y, Game.PlayerX, Game.PlayerY);
+                if (distance < 8)
+                {
+                    message += " [OK, lag, distance=" + distance + "]";
+                }
+                else
+                {
+                    message += " [WARNING, distance=" + distance + "] /!\\";
+                }
+            }
+            LogMessage(message);
         }
 
         private void Script_ScriptMessage(string message)
