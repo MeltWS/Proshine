@@ -37,7 +37,7 @@ namespace PROBot
         public StaffAvoider StaffAvoider { get; private set; }
         public AutoReconnector AutoReconnector { get; private set; }
         public MovementResynchronizer MovementResynchronizer { get; private set; }
-        
+
         private bool _loginRequested;
 
         private Timeout _actionTimeout = new Timeout();
@@ -126,7 +126,7 @@ namespace PROBot
             {
                 return;
             }
-            
+
             if (PokemonEvolver.Update()) return;
             if (MoveTeacher.Update()) return;
 
@@ -320,7 +320,7 @@ namespace PROBot
                 Stop();
             }
         }
-        
+
         private void Client_ConnectionOpened()
         {
             ConnectionOpened?.Invoke();
@@ -389,6 +389,7 @@ namespace PROBot
 
         private void Client_TeleportationOccuring(string map, int x, int y)
         {
+#if DEBUG
             string message = "Position updated: " + map + " (" + x + ", " + y + ")";
             if (Game.Map == null || Game.IsTeleporting)
             {
@@ -411,6 +412,7 @@ namespace PROBot
                 }
             }
             LogMessage(message);
+#endif
         }
 
         private void Script_ScriptMessage(string message)
