@@ -324,7 +324,8 @@ namespace PROBot
         private void Client_ConnectionOpened()
         {
             ConnectionOpened?.Invoke();
-            Game.SendAuthentication(Account.Name, Account.Password, HardwareHash.GenerateRandom());
+            LogMessage("Mac adress : " + Account.HardwareHash);
+            Game.SendAuthentication(Account.Name, Account.Password, Account.HardwareHash);
         }
 
         private void Client_ConnectionClosed(Exception ex)

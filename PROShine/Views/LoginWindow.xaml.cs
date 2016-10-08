@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using PROProtocol;
 
 namespace PROShine
 {
@@ -290,13 +291,21 @@ namespace PROShine
             {
                 return;
             }
-            Account account = new Account(UsernameTextBox.Text.Trim());
-
+            string uname = UsernameTextBox.Text.Trim();
+            Account account = new Account(uname);
             if (PasswordTextBox.Password != "" && PasswordTextBox.Password != null)
             {
                 account.Password = PasswordTextBox.Password;
             }
             account.Server = Server;
+            if (_bot.AccountManager.Accounts.ContainsKey(uname))
+            {
+                account.HardwareHash = _bot.AccountManager.Accounts[uname].HardwareHash;
+            }
+            if (string.IsNullOrEmpty(account.HardwareHash))
+            {
+                account.HardwareHash = HardwareHash.GenerateRandom();
+            }
             if (HasProxy)
             {
                 SocksVersion socksVersion = SocksVersion.None;

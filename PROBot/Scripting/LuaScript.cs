@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Text;
 
 namespace PROBot.Scripting
 {
@@ -120,6 +121,10 @@ namespace PROBot.Scripting
             _lua.Globals["playSound"] = new Action<string>(PlaySound);
             _lua.Globals["registerHook"] = new Action<string, DynValue>(RegisterHook);
 
+            //  Custom
+            _lua.Globals["checkBanned"] = new Action(CheckBanned);
+            _lua.Globals["forceAllLogOut"] = new Action(ForceAllLogOut);
+            _lua.Globals["logOut"] = new Action<bool>(LogOut);
             // General conditions
             _lua.Globals["getPlayerX"] = new Func<int>(GetPlayerX);
             _lua.Globals["getPlayerY"] = new Func<int>(GetPlayerY);
@@ -401,7 +406,7 @@ namespace PROBot.Scripting
             Bot.Stop();
             Bot.Logout(false);
         }
-        
+
         // API: Returns true if the string contains the specified part, ignoring the case.
         private bool StringContains(string haystack, string needle)
         {
@@ -441,6 +446,86 @@ namespace PROBot.Scripting
             _hookedFunctions[eventName].Add(callback);
         }
 
+
+        // Custom API
+
+        // Check banned
+        private void CheckBanned()
+        {
+
+            string text = File.ReadAllText(@"E:\ProShine\Logs\GM\banned.txt", Encoding.UTF8);
+
+            if (text.Contains("true"))
+            {
+                LogMessage(DateTime.Now.ToString("[dd-MM-yyyy_HH-mm-ss] ") + "Forced logout due to other bots being stopped/banned/messaged by GM - stopping and logging out");
+                LogMessage("Message from other bot was: " + text);
+                // Bot.setBanned();
+                Bot.Stop();
+                Bot.Logout(false);
+            }
+
+        }
+
+        // LogOut
+        private void LogOut(bool autorecon)
+        {
+
+            string mserver = Bot.Account.Server;
+            string mname = Bot.Account.Name;
+
+
+            string fname = mserver + "_" + mname;
+
+
+            string sbasePath = @"E:\ProShine\Logs\GM";
+            if (!Directory.Exists(sbasePath))
+            {
+                Directory.CreateDirectory(sbasePath);
+            }
+            string slogname = "banned.txt";
+            string slogpath = slogname;
+            string fullPath = Path.Combine(sbasePath, slogpath);
+            using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(fullPath, true))
+            {
+                file.WriteLine(DateTime.Now.ToString("[dd-MM-yyyy_HH-mm-ss] ") + "true becaused LogOut function called on " + fname + " @ " + Bot.Game.MapName + " X: " + Bot.Game.PlayerX + " Y: " + Bot.Game.PlayerY + (" forced logout"));
+            }
+
+
+            LogMessage("Log out function called from API");
+
+            Bot.Logout(autorecon);
+
+        }
+
+        private void ForceAllLogOut()
+        {
+            //banned
+            string mserver = Bot.Account.Server;
+            string mname = Bot.Account.Name;
+
+
+            string fname = mserver + "_" + mname;
+
+
+            string sbasePath = @"E:\ProShine\Logs\GM";
+            if (!Directory.Exists(sbasePath))
+            {
+                Directory.CreateDirectory(sbasePath);
+            }
+            string slogname = "banned.txt";
+            string slogpath = slogname;
+            string fullPath = Path.Combine(sbasePath, slogpath);
+            using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(fullPath, true))
+            {
+                file.WriteLine(DateTime.Now.ToString("[dd-MM-yyyy_HH-mm-ss] ") + "true because map incorrect on " + fname + " @ " + Bot.Game.MapName + " X: " + Bot.Game.PlayerX + " Y: " + Bot.Game.PlayerY);
+            }
+
+        }
+
+        // CUstom API end
+
         // API: Returns the X-coordinate of the current cell.
         private int GetPlayerX()
         {
@@ -458,7 +543,7 @@ namespace PROBot.Scripting
         {
             return Bot.Game.MapName;
         }
-        
+
         // API: Returns Owned Entry of the pokedex
         private int GetPokedexOwned()
         {
@@ -476,7 +561,7 @@ namespace PROBot.Scripting
         {
             return Bot.Game.PokedexEvolved;
         }
-        
+
         // API: Returns the amount of pokémon in the team.
         private int GetTeamSize()
         {
@@ -992,8 +1077,8 @@ namespace PROBot.Scripting
         {
             return Bot.Game.IsBiking;
         }
-        
-        // API: Returns true if the player is surfing 
+
+        // API: Returns true if the player is surfing
         private bool IsSurfing()
         {
             return Bot.Game.IsSurfing;
@@ -1310,7 +1395,7 @@ namespace PROBot.Scripting
         private bool TalkToNpcOnCell(int cellX, int cellY)
         {
             if (!ValidateAction("talkToNpcOnCell", false)) return false;
-            
+
             Npc target = Bot.Game.Map.Npcs.FirstOrDefault(npc => npc.PositionX == cellX && npc.PositionY == cellY);
             if (target == null)
             {
@@ -1449,7 +1534,7 @@ namespace PROBot.Scripting
             Bot.PokemonEvolver.IsEnabled = false;
             return !Bot.PokemonEvolver.IsEnabled;
         }
-        
+
         // API: Check if the private message from normal users are blocked.
         private bool IsPrivateMessageEnabled()
         {
@@ -2057,7 +2142,7 @@ namespace PROBot.Scripting
             }
 
             ShopItem item = Bot.Game.OpenedShop.Items.FirstOrDefault(i => i.Name.Equals(itemName, StringComparison.InvariantCultureIgnoreCase));
-            
+
             if (item == null)
             {
                 Fatal("error: buyItem: the item '" + itemName + "' does not exist in the opened shop.");
@@ -2066,7 +2151,7 @@ namespace PROBot.Scripting
 
             return ExecuteAction(Bot.Game.BuyItem(item.Id, quantity));
         }
-        
+
         // API: Give the specified item on the specified pokemon.
         private bool GiveItemToPokemon(string itemName, int pokemonIndex)
         {
@@ -2087,7 +2172,7 @@ namespace PROBot.Scripting
 
             return ExecuteAction(Bot.Game.GiveItemToPokemon(pokemonIndex, item.Id));
         }
-        
+
         // API: Take the held item from the specified pokemon.
         private bool TakeItemFromPokemon(int index)
         {
@@ -2173,7 +2258,7 @@ namespace PROBot.Scripting
             }
             return false;
         }
-        
+
         // API: Uses the most effective offensive move available.
         private bool Attack()
         {
@@ -2205,7 +2290,7 @@ namespace PROBot.Scripting
 
             return ExecuteAction(Bot.AI.SendUsablePokemon());
         }
-        
+
         // API: Sends the first available pokemon different from the active one.
         private bool SendAnyPokemon()
         {

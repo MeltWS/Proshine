@@ -199,18 +199,27 @@ namespace PROShine
             LogMessage("Connecting to the server...");
             LoginButton.IsEnabled = false;
             LoginMenuItem.IsEnabled = false;
-            Account account = new Account(login.Username);
             lock (Bot)
             {
-                account.Password = login.Password;
-                account.Server = login.Server;
-                if (login.HasProxy)
+                Account account;
+                if (Bot.AccountManager.Accounts.ContainsKey(login.Username))
                 {
-                    account.Socks.Version = (SocksVersion)login.ProxyVersion;
-                    account.Socks.Host = login.ProxyHost;
-                    account.Socks.Port = login.ProxyPort;
-                    account.Socks.Username = login.ProxyUsername;
-                    account.Socks.Password = login.ProxyPassword;
+                    account = Bot.AccountManager.Accounts[login.Username];
+                }
+                else
+                {
+                    account = new Account(login.Username);
+                    account.Password = login.Password;
+                    account.Server = login.Server;
+                    account.HardwareHash = HardwareHash.GenerateRandom();
+                    if (login.HasProxy)
+                    {
+                        account.Socks.Version = (SocksVersion)login.ProxyVersion;
+                        account.Socks.Host = login.ProxyHost;
+                        account.Socks.Port = login.ProxyPort;
+                        account.Socks.Username = login.ProxyUsername;
+                        account.Socks.Password = login.ProxyPassword;
+                    }
                 }
                 Bot.Login(account);
             }
@@ -650,7 +659,7 @@ namespace PROShine
                 PokeTimeText.Text = pokeTime;
             });
         }
-        
+
         private void Client_ShopOpened(Shop shop)
         {
             Dispatcher.InvokeAsync(delegate
@@ -675,12 +684,49 @@ namespace PROShine
                 BotStopMenuItem.IsEnabled = Bot.Game != null && Bot.Game.IsConnected && Bot.Running != BotClient.State.Stopped;
             }
         }
-        
-        private void LogMessage(string message)
+          private void LogMessage(string message)
         {
             message = "[" + DateTime.Now.ToLongTimeString() + "] " + message;
             AppendLineToTextBox(MessageTextBox, message);
             FileLog.Append(message);
+
+            //
+            if (message.Contains("You have been permanently banned") || message.Contains("You are banned from PRO"))
+            {
+                // Bot.setBanned();
+
+                //banned
+                string mserver = Bot.Account.Server;
+                string mname = Bot.Account.Name;
+
+
+                string fname = mserver + "_" + mname;
+
+
+                string sbasePath = @"E:\ProShine\Logs\GM";
+                if (!Directory.Exists(sbasePath))
+                {
+                    Directory.CreateDirectory(sbasePath);
+                }
+                string slogname = "banned.txt";
+                string slogpath = slogname;
+                string fullPath = Path.Combine(sbasePath, slogpath);
+                using (System.IO.StreamWriter file2 =
+                    new System.IO.StreamWriter(fullPath, true))
+                {
+                    if (message.Contains("You have been permanently banned")){
+                        file2.WriteLine("true BANNED on " + fname + DateTime.Now.ToString("[dd-MM-yyyy_HH-mm-ss] ") + "@ " + Bot.Game.MapName);
+                        file2.Close();
+                    }
+                    else
+                    {
+                        file2.WriteLine("true BANNED on " + fname + DateTime.Now.ToString("[dd-MM-yyyy_HH-mm-ss] "));
+                        file2.Close();
+                    }
+
+                }
+
+            }
         }
 
         private void LogMessage(string format, params object[] args)
