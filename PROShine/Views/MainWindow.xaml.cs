@@ -14,6 +14,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using System.Windows.Interop;
+using System.Media;
 
 namespace PROShine
 {
@@ -723,9 +725,24 @@ namespace PROShine
                         file2.WriteLine("true BANNED on " + fname + DateTime.Now.ToString("[dd-MM-yyyy_HH-mm-ss] "));
                         file2.Close();
                     }
-
                 }
+            }
+            else if (message.Contains("No action executed: stopping the bot."))
+            {
+                Window window = Window.GetWindow(this);
+                if (!window.IsActive || !IsVisible)
+                {
+                    IntPtr handle = new WindowInteropHelper(window).Handle;
+                    FlashWindowHelper.Flash(handle);
 
+                    if (File.Exists("Assets/stop.wav"))
+                    {
+                        using (SoundPlayer player = new SoundPlayer("Assets/stop.wav"))
+                        {
+                            player.Play();
+                        }
+                    }
+                }
             }
         }
 
