@@ -727,7 +727,7 @@ namespace PROShine
                     }
                 }
             }
-            else if (message.Contains("No action executed: stopping the bot."))
+            else if (message == "Bot stopped")
             {
                 Window window = Window.GetWindow(this);
                 if (!window.IsActive || !IsVisible)
