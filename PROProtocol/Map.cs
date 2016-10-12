@@ -120,51 +120,89 @@ namespace PROProtocol
                         int losLength = reader.ReadByte();
                         int num = reader.ReadInt16();
 
-                        ReadString(reader);
+                        string t0 = ReadString(reader);
                         string path = ReadString(reader);
 
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
+                        int t1 = reader.ReadInt16();
+                        int t2 = reader.ReadInt16();
+                        int t3 = reader.ReadInt16();
+                        int t4 = reader.ReadInt16();
+                        int t5 = reader.ReadInt16();
+                        int t6 = reader.ReadInt16();
+                        int t7 = reader.ReadInt16();
+                        int t8 = reader.ReadInt16();
+                        int t9 = reader.ReadInt16();
+                        int t10 = reader.ReadInt16();
+                        int t11 = reader.ReadInt16();
+                        int t12 = reader.ReadInt16();
+                        int t13 = reader.ReadInt16();
+                        int t14 = reader.ReadInt16();
 
-                        bool isBattler = reader.ReadInt16() != 0;
+                        int battler = reader.ReadInt16();
+                        bool isBattler = battler != 0;
 
-                        reader.ReadInt16();
-                        reader.ReadSingle();
-                        reader.ReadSingle();
+                        int t29 = reader.ReadInt16();
+                        float t30 = reader.ReadSingle();
+                        float t31 = reader.ReadSingle();
 
                         int npcId = reader.ReadInt16();
-                        
+
                         if (npcName != "TileScript")
                         {
-                            OriginalNpcs.Add(new Npc(npcId, npcName, x, y, losLength, path));
+                            OriginalNpcs.Add(new Npc(npcId, npcName, isBattler, num, x, y, losLength, path));
                         }
 
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
-                        reader.ReadInt16();
+                        int t15 = reader.ReadInt16();
+                        int t16 = reader.ReadInt16();
+                        int t17 = reader.ReadInt16();
+                        int t18 = reader.ReadInt16();
+                        int t19 = reader.ReadInt16();
+                        int t20 = reader.ReadInt16();
+                        int t21 = reader.ReadInt16();
+                        int t22 = reader.ReadInt16();
+                        int t23 = reader.ReadInt16();
+                        int t24 = reader.ReadInt16();
+                        int t25 = reader.ReadInt16();
+                        int t26 = reader.ReadInt16();
+                        int t27 = reader.ReadInt16();
+                        int t28 = reader.ReadInt16();
+
+                        // if (num == 70)
+                        // {
+                        //     Console.Write("NPC: " + npcName + "  x:" + x + "  y:" + y + "  id:" + npcId + "  b1:" + b1 + "  num:" + num  + "  battler:" + battler);
+                        //     Console.Write(" t0:" + t0);
+                        //     Console.Write(" t1:" + t1);
+                        //     Console.Write(" t2:" + t2);
+                        //     Console.Write(" t3:" + t3);
+                        //     Console.Write(" t4:" + t4);
+                        //     Console.Write(" t5:" + t5);
+                        //     Console.Write(" t6:" + t6);
+                        //     Console.Write(" t7:" + t7);
+                        //     Console.Write(" t8:" + t8);
+                        //     Console.Write(" t9:" + t9);
+                        //     Console.Write(" t10:" + t10);
+                        //     Console.Write(" t11:" + t11);
+                        //     Console.Write(" t12:" + t12);
+                        //     Console.Write(" t13:" + t13);
+                        //     Console.Write(" t14:" + t14);
+                        //     Console.Write(" t15:" + t15);
+                        //     Console.Write(" t16:" + t16);
+                        //     Console.Write(" t17:" + t17);
+                        //     Console.Write(" t18:" + t18);
+                        //     Console.Write(" t19:" + t19);
+                        //     Console.Write(" t20:" + t20);
+                        //     Console.Write(" t21:" + t21);
+                        //     Console.Write(" t22:" + t22);
+                        //     Console.Write(" t23:" + t23);
+                        //     Console.Write(" t24:" + t24);
+                        //     Console.Write(" t25:" + t25);
+                        //     Console.Write(" t26:" + t26);
+                        //     Console.Write(" t27:" + t27);
+                        //     Console.Write(" t28:" + t28);
+                        //     Console.Write(" t29:" + t29);
+                        //     Console.Write(" t30:" + t30);
+                        //     Console.WriteLine(" t31:" + t31);
+                        // }
                     }
                 }
             }
@@ -323,7 +361,7 @@ namespace PROProtocol
             }
             return false;
         }
-        
+
         public bool IsNormalGround(int x, int y)
         {
             if (x >= 0 && x < Width && y >= 0 && y < Height)
@@ -583,7 +621,7 @@ namespace PROProtocol
                 int destinationY = y;
                 bool destinationGround = isOnGround;
                 bool isSurfing = false;
-                
+
                 int slider = GetSlider(destinationX, destinationY);
                 if (slider != -1)
                 {

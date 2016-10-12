@@ -138,6 +138,7 @@ namespace BrightNetwork
         {
             string text = ProcessDataBeforeReceiving(TextEncoding.GetString(data));
             _receiveBuffer += text;
+            // Console.WriteLine("Received packet: " + text);
             ExtractPackets();
         }
 
@@ -150,7 +151,7 @@ namespace BrightNetwork
             }
             while (hasExtracted);
         }
-        
+
         private bool ExtractPendingPacket()
         {
             int pos = _receiveBuffer.IndexOf(PacketDelimiter);
