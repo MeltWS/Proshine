@@ -169,6 +169,8 @@ namespace PROBot.Scripting
             _lua.Globals["getActiveBattlers"] = new Func<Dictionary<string, Dictionary<string, int>>>(GetActiveBattlers);
             _lua.Globals["getActiveDigSpots"] = new Func<List<Dictionary<string, int>>>(GetActiveDigSpots);
             _lua.Globals["getActiveHeadbuttTrees"] = new Func<List<Dictionary<string, int>>>(GetActiveHeadbuttTrees);
+            _lua.Globals["getActiveBerryTrees"] = new Func<List<Dictionary<string, int>>>(GetActiveBerryTrees);
+            _lua.Globals["getDiscoverableItems"] = new Func<List<Dictionary<string, int>>>(GetDiscoverableItems);
 
             _lua.Globals["hasItem"] = new Func<string, bool>(HasItem);
             _lua.Globals["getItemQuantity"] = new Func<string, int>(GetItemQuantity);
@@ -471,6 +473,45 @@ namespace PROBot.Scripting
             return trees;
         }
 
+        // API return an array of all harvestable berry trees on the currrent map. format : {index = {"x" = x, "y" = y}}
+        private List<Dictionary<string, int>> GetActiveBerryTrees()
+        {
+            if (!Bot.Game.AreNpcDestroyed)
+            {
+                LogMessage("Data for used Berry Trees were not received yet /!\\");
+                return null;
+            }
+            int targetCount = Bot.Game.Map.Npcs.Count(npc => npc.Num > 40 && npc.Num < 53); // range tbd 53 = swimmer
+            var trees = new List<Dictionary<string, int>>();
+            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Num > 40 && npc.Num < 53))
+            {
+                var npcData = new Dictionary<string, int>();
+                npcData["x"] = npc.PositionX;
+                npcData["y"] = npc.PositionY;
+                trees.Add(npcData);
+            }
+            return trees;
+        }
+
+        // API return an array of all discoverable items on the currrent map. format : {index = {"x" = x, "y" = y}}
+        private List<Dictionary<string, int>> GetDiscoverableItems()
+        {
+            if (!Bot.Game.AreNpcDestroyed)
+            {
+                LogMessage("Data for discovered items were not received yet /!\\");
+                return null;
+            }
+            int targetCount = Bot.Game.Map.Npcs.Count(npc => npc.Num == 11);
+            var items = new List<Dictionary<string, int>>();
+            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Num == 11))
+            {
+                var npcData = new Dictionary<string, int>();
+                npcData["x"] = npc.PositionX;
+                npcData["y"] = npc.PositionY;
+                items.Add(npcData);
+            }
+            return items;
+        }
         // API: Returns true if the string contains the specified part, ignoring the case.
         private bool StringContains(string haystack, string needle)
         {
