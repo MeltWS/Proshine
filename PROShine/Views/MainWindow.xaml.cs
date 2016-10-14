@@ -438,6 +438,7 @@ namespace PROShine
                 {
                     stateText = "stopped";
                     StartScriptButtonIcon.Icon = FontAwesome.WPF.FontAwesomeIcon.Play;
+                    PlayNotification();
                 }
                 LogMessage("Bot " + stateText);
             });
@@ -727,23 +728,6 @@ namespace PROShine
                     }
                 }
             }
-            else if (message == "Bot stopped")
-            {
-                Window window = Window.GetWindow(this);
-                if (!window.IsActive || !IsVisible)
-                {
-                    IntPtr handle = new WindowInteropHelper(window).Handle;
-                    FlashWindowHelper.Flash(handle);
-
-                    if (File.Exists("Assets/stop.wav"))
-                    {
-                        using (SoundPlayer player = new SoundPlayer("Assets/stop.wav"))
-                        {
-                            player.Play();
-                        }
-                    }
-                }
-            }
         }
 
         private void LogMessage(string format, params object[] args)
@@ -887,6 +871,24 @@ namespace PROShine
             if (shouldLogin)
             {
                 OpenLoginWindow();
+            }
+        }
+
+        private void PlayNotification()
+        {
+            Window window = Window.GetWindow(this);
+            if (!window.IsActive || !IsVisible)
+            {
+                IntPtr handle = new WindowInteropHelper(window).Handle;
+                FlashWindowHelper.Flash(handle);
+
+                if (File.Exists("Assets/stop.wav"))
+                {
+                    using (SoundPlayer player = new SoundPlayer("Assets/stop.wav"))
+                    {
+                        player.Play();
+                    }
+                }
             }
         }
     }

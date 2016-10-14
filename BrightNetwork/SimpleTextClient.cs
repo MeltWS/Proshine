@@ -150,7 +150,7 @@ namespace BrightNetwork
             }
             while (hasExtracted);
         }
-        
+
         private bool ExtractPendingPacket()
         {
             int pos = _receiveBuffer.IndexOf(PacketDelimiter);
