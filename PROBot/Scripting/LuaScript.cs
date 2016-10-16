@@ -480,7 +480,7 @@ namespace PROBot.Scripting
                 return null;
             }
             var trees = new List<Dictionary<string, int>>();
-            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Num > 40 && npc.Num < 53))
+            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Num > 40 && npc.Num < 53 && npc.Num != 48)) // 48 is red at celadon
             {
                 var npcData = new Dictionary<string, int>();
                 npcData["x"] = npc.PositionX;
