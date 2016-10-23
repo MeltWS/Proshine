@@ -55,6 +55,7 @@ namespace PROShine.Views
             Keyboard.Focus(this);
         }
 
+
         private void MapView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             Window parent = Window.GetWindow(this);
@@ -137,6 +138,22 @@ namespace PROShine.Views
             }
         }
 
+        private void GridCell_MouseDown(object sender, MouseEventArgs e)
+        {
+            _bot.LogMessage("loc " + ((Rectangle)sender).ToolTip);
+        }
+
+        private void GridCell_MouseEnter(object sender, MouseEventArgs e)
+        {
+            ((Rectangle)sender).Stroke = Brushes.Red;
+        }
+
+        private void GridCell_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var rect = sender as Rectangle;
+            rect.Stroke = rect.Fill;
+        }
+
         public void RefreshMap()
         {
             if (!IsVisible)
@@ -153,7 +170,6 @@ namespace PROShine.Views
                 if (_bot.Game == null || _bot.Game.Map == null) return;
 
                 UniformGrid grid = new UniformGrid();
-
                 grid.Columns = _bot.Game.Map.DimensionX;
                 grid.Rows = _bot.Game.Map.DimensionY;
                 grid.Width = grid.Columns * _cellWidth;
@@ -177,6 +193,11 @@ namespace PROShine.Views
                         {
                             rect.Fill = Brushes.Black;
                         }
+                        rect.StrokeThickness = 2;
+                        rect.MouseDown += GridCell_MouseDown;
+                        rect.MouseEnter += GridCell_MouseEnter;
+                        rect.MouseLeave += GridCell_MouseLeave;
+                        rect.ToolTip = "( " + x + " , " + y + " )";
                         grid.Children.Add(rect);
                     }
                 }
@@ -186,6 +207,7 @@ namespace PROShine.Views
 
                 _player = new Ellipse() { Fill = Brushes.Red, Width = _cellWidth, Height = _cellWidth };
                 MapCanvas.Children.Add(_player);
+
 
                 UpdatePlayerPosition();
             }
