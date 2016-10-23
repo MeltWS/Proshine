@@ -138,7 +138,6 @@ namespace BrightNetwork
         {
             string text = ProcessDataBeforeReceiving(TextEncoding.GetString(data));
             _receiveBuffer += text;
-            // Console.WriteLine("Received packet: " + text);
             ExtractPackets();
         }
 

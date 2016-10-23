@@ -110,6 +110,8 @@ namespace PROBot
 
         private Node FindPath(int fromX, int fromY, bool isOnGround, bool isSurfing, int toX, int toY, int requiredDistance)
         {
+            int[] groundLevels = {0, 14};
+            int toCollider = _client.Map.GetCollider(toX, toY);
             Dictionary<uint, Node> openList = new Dictionary<uint, Node>();
             HashSet<uint> closedList = new HashSet<uint>();
             Node start = new Node(fromX, fromY, isOnGround, isSurfing);
@@ -119,7 +121,9 @@ namespace PROBot
             {
                 Node current = GetBestNode(openList.Values);
                 int distance = Math.Abs(current.X - toX) + Math.Abs(current.Y - toY);
-                if (distance <= requiredDistance)
+                int currentCollider = _client.Map.GetCollider(current.X, current.Y);
+                bool canInteract = !Array.Exists(groundLevels, e => e == currentCollider) || !Array.Exists(groundLevels, e => e == toCollider) || currentCollider == toCollider;
+                if (distance <= requiredDistance && canInteract)
                 {
                     return current;
                 }
@@ -167,7 +171,7 @@ namespace PROBot
         private List<Node> GetNeighbors(Node node)
         {
             List<Node> neighbors = new List<Node>();
-            
+
             foreach (Direction direction in _directions)
             {
                 int destinationX = node.X;
