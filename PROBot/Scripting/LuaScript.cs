@@ -117,7 +117,6 @@ namespace PROBot.Scripting
             _lua.Globals["fatal"] = new Action<string>(Fatal);
             _lua.Globals["logout"] = new Action<string>(Logout);
             _lua.Globals["stringContains"] = new Func<string, string, bool>(StringContains);
-            _lua.Globals["getBotName"] = new Func<string>(GetBotName);
             _lua.Globals["playSound"] = new Action<string>(PlaySound);
             _lua.Globals["registerHook"] = new Action<string, DynValue>(RegisterHook);
 
@@ -129,6 +128,7 @@ namespace PROBot.Scripting
             // General conditions
             _lua.Globals["getPlayerX"] = new Func<int>(GetPlayerX);
             _lua.Globals["getPlayerY"] = new Func<int>(GetPlayerY);
+            _lua.Globals["getAccountName"] = new Func<string>(GetAccountName);
             _lua.Globals["getMapName"] = new Func<string>(GetMapName);
             _lua.Globals["getPokedexOwned"] = new Func<int>(GetPokedexOwned);
             _lua.Globals["getPokedexSeen"] = new Func<int>(GetPokedexSeen);
@@ -417,11 +417,6 @@ namespace PROBot.Scripting
         // API return an array of all NPCs that can be challenged on the current map. format : {"npcName" = {"x" = x, "y" = y}}
         private Dictionary<string, Dictionary<string, int>> GetActiveBattlers()
         {
-            if (!Bot.Game.AreNpcReceived)
-            {
-                LogMessage("NPC battle infos were not received /!\\");
-                return null;
-            }
             var activeBattlers = new Dictionary<string, Dictionary<string, int>>();
             foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.CanBattle))
             {
@@ -436,13 +431,8 @@ namespace PROBot.Scripting
         // API return an array of all usable Dig Spots on the currrent map. format : {index = {"x" = x, "y" = y}}
         private List<Dictionary<string, int>> GetActiveDigSpots()
         {
-            if (!Bot.Game.AreNpcDestroyed)
-            {
-                LogMessage("Data for used digspots were not received yet /!\\");
-                return null;
-            }
             var digSpots = new List<Dictionary<string, int>>();
-            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Num == 70 || npc.Num == 71))
+            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Type == 70 || npc.Type == 71))
             {
                 var npcData = new Dictionary<string, int>();
                 npcData["x"] = npc.PositionX;
@@ -455,13 +445,8 @@ namespace PROBot.Scripting
         // API return an array of all usable Headbutt trees on the currrent map. format : {index = {"x" = x, "y" = y}}
         private List<Dictionary<string, int>> GetActiveHeadbuttTrees()
         {
-            if (!Bot.Game.AreNpcDestroyed)
-            {
-                LogMessage("Data for used headbutt Trees were not received yet /!\\");
-                return null;
-            }
             var trees = new List<Dictionary<string, int>>();
-            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Num == 101))
+            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Type == 101))
             {
                 var npcData = new Dictionary<string, int>();
                 npcData["x"] = npc.PositionX;
@@ -474,13 +459,8 @@ namespace PROBot.Scripting
         // API return an array of all harvestable berry trees on the currrent map. format : {index = {"x" = x, "y" = y}}
         private List<Dictionary<string, int>> GetActiveBerryTrees()
         {
-            if (!Bot.Game.AreNpcDestroyed)
-            {
-                LogMessage("Data for used Berry Trees were not received yet /!\\");
-                return null;
-            }
             var trees = new List<Dictionary<string, int>>();
-            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Num > 41 && npc.Num < 53 && npc.Num != 48)) // 48 is red at celadon
+            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Type > 41 && npc.Type < 53 && npc.Type != 48)) // 48 is red at celadon
             {
                 var npcData = new Dictionary<string, int>();
                 npcData["x"] = npc.PositionX;
@@ -493,13 +473,8 @@ namespace PROBot.Scripting
         // API return an array of all discoverable items on the currrent map. format : {index = {"x" = x, "y" = y}}
         private List<Dictionary<string, int>> GetDiscoverableItems()
         {
-            if (!Bot.Game.AreNpcDestroyed)
-            {
-                LogMessage("Data for discovered items were not received yet /!\\");
-                return null;
-            }
             var items = new List<Dictionary<string, int>>();
-            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Num == 11))
+            foreach (Npc npc in Bot.Game.Map.Npcs.Where(npc => npc.Type == 11 && npc.LosLength < 100))
             {
                 var npcData = new Dictionary<string, int>();
                 npcData["x"] = npc.PositionX;
@@ -509,21 +484,16 @@ namespace PROBot.Scripting
             return items;
         }
 
-        // API return npc data on current map, format : { { "x" = x , "y" = y, "num" = num }, {...}, ... }
+        // API return npc data on current map, format : { { "x" = x , "y" = y, "type" = type }, {...}, ... }
         private List<Dictionary<string, int>> GetNpcData()
         {
-            if (!Bot.Game.AreNpcDestroyed || !Bot.Game.AreNpcReceived)
-            {
-                LogMessage("Not all data for NPCs were received /!\\");
-                return null;
-            }
             var lNpc = new List<Dictionary<string, int>>();
             foreach (Npc npc in Bot.Game.Map.Npcs)
             {
                 var npcData = new Dictionary<string, int>();
                 npcData["x"] = npc.PositionX;
                 npcData["y"] = npc.PositionY;
-                npcData["num"] = npc.Num;
+                npcData["type"] = npc.Type;
                 lNpc.Add(npcData);
             }
             return lNpc;
@@ -533,12 +503,6 @@ namespace PROBot.Scripting
         private bool StringContains(string haystack, string needle)
         {
             return haystack.ToUpperInvariant().Contains(needle.ToUpperInvariant());
-        }
-
-        // API: Return the name of the User's Bot
-        private string GetBotName()
-        {
-            return Bot.Account.Name;
         }
 
         // API: Returns playing a custom sound.
@@ -658,6 +622,12 @@ namespace PROBot.Scripting
         private int GetPlayerY()
         {
             return Bot.Game.PlayerY;
+        }
+
+        // API: Returns current account name.
+        private string GetAccountName()
+        {
+            return Bot.Account.Name;
         }
 
         // API: Returns the name of the current map.

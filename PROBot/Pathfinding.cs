@@ -120,12 +120,17 @@ namespace PROBot
             while (openList.Count > 0)
             {
                 Node current = GetBestNode(openList.Values);
-                int distance = Math.Abs(current.X - toX) + Math.Abs(current.Y - toY);
-                int currentCollider = _client.Map.GetCollider(current.X, current.Y);
-                bool canInteract = !Array.Exists(groundLevels, e => e == currentCollider) || !Array.Exists(groundLevels, e => e == toCollider) || currentCollider == toCollider;
-                if (distance <= requiredDistance && canInteract)
+                int distance = GameClient.DistanceBetween(current.X, current.Y, toX, toY);
+                if (distance == 0)
                 {
                     return current;
+                }
+                else if (distance <= requiredDistance)
+                {
+                    if (_client.Map.CanInteract(current.X, current.Y, toX, toY))
+                    {
+                        return current;
+                    }
                 }
 
                 openList.Remove(current.Hash);
